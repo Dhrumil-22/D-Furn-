@@ -1,0 +1,55 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Product {
+  id                         Int       @id @default(autoincrement())
+  materialCategory           String?
+  itemCode                   String?
+  itemName                   String
+  mainCategory               String?
+  subCategory                String?
+  attribute1                 String?
+  attribute2                 String?
+  attribute3                 String?
+  attribute4                 String?
+  attribute5                 String?
+  attribute6                 String?
+  attribute7                 String?
+  vendorName                 String?
+  procureUnit                String?
+  costingUnit                String?
+  issueUnit                  String?
+  procuredUnitCost           Float?
+  costingUnitCost            Float?
+  issuedUnitCost             Float?
+  openingStock               Float?
+  storageLocation            String?
+  reOrderLevel               Int?
+  image                      String?
+  physicalStock              Float?
+  physicalStockLastUpdatedOn DateTime?
+  verificationFrequency      Int?
+  websiteSync                Boolean   @default(false)
+  createdAt                  DateTime  @default(now())
+  updatedAt                  DateTime  @updatedAt
+}
+
+model Category {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  image       String?
+  isAvailable Boolean  @default(true)
+  type        String   @default("MASTER")
+  parentName  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}

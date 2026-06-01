@@ -1,34 +1,42 @@
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f4f6f9; /* Light off-white background */
+  --foreground: #1e1e1e;
+  
+  --primary: #2563eb; /* Bright blue for buttons */
+  --primary-hover: #1d4ed8;
+  
+  --card-bg: #ffffff;
+  --card-border: #e9ecef;
+  --card-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.03);
+  
+  --input-bg: #ffffff;
+  --input-border: #ced4da;
+  --input-focus: #2563eb;
+  
+  --sidebar-bg: #302653; /* Deep purple from image */
+  --sidebar-border: #302653;
+  --sidebar-text: #e2e8f0;
+  
+  --brand-orange: #f97316; /* For d'furn logo */
+  
+  --glass-effect: none; /* Removing glass to match flat/clean look of image */
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
-html {
+html, body {
   height: 100%;
-}
-
-html,
-body {
   max-width: 100vw;
   overflow-x: hidden;
 }
 
 body {
-  min-height: 100%;
-  display: flex;
-  flex-direction: column;
   color: var(--foreground);
   background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 * {
@@ -42,8 +50,80 @@ a {
   text-decoration: none;
 }
 
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
-  }
+.layout-container {
+  display: flex;
+  min-height: 100vh;
+}
+
+.main-content {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  padding: 32px;
+}
+
+.glass-card {
+  background: var(--card-bg);
+  backdrop-filter: var(--glass-effect);
+  -webkit-backdrop-filter: var(--glass-effect);
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  box-shadow: var(--card-shadow);
+  padding: 24px;
+}
+
+.product-card-link {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.product-card-link:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 20px -8px rgba(0,0,0,0.1);
+}
+
+.btn-primary {
+  background-color: var(--primary);
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.input-field {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--input-border);
+  border-radius: 8px;
+  background-color: var(--input-bg);
+  color: var(--foreground);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.input-field:focus {
+  outline: none;
+  border-color: var(--input-focus);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+.label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 6px;
+  font-size: 0.9rem;
+}
+
+.page-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
 }
