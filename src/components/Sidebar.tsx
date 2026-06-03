@@ -5,20 +5,21 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useTheme } from 'next-themes';
 import { useState, useEffect } from 'react';
 
-export default function Sidebar() {
+export default function Sidebar({ userRole }: { userRole?: string }) {
   const pathname = usePathname();
   const router = useRouter();
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
-  const [userRole, setUserRole] = useState<string | null>(null);
 
   useEffect(() => {
     setMounted(true);
-    // Simple check to get role if we stored it in localstorage or check API.
-    // For now we'll just show the link and let middleware protect it.
   }, []);
   
-  const modules = [
+  if (pathname === '/login') {
+    return null;
+  }
+
+  let modules = [
     { name: 'Product Catalogue', path: '/product-catalog', icon: 'fi fi-rr-box-open' },
     { name: 'Material Management', path: '/material-management', icon: 'fi fi-rr-settings' },
     { name: 'Product Tree / BOM', path: '/bom', icon: 'fi fi-rr-sitemap' },
@@ -27,6 +28,13 @@ export default function Sidebar() {
     { name: 'Dealer & Distributor', path: '/dealers', icon: 'fi fi-rr-handshake' },
     { name: 'Authorization Access', path: '/authorization-access', icon: 'fi fi-rr-lock' },
   ];
+
+  if (userRole && userRole.toUpperCase() === 'VERIFIER') {
+    modules = [
+      { name: 'Physical Verification', path: '/material-management/physical-verification', icon: 'fi fi-rr-clipboard-list-check' },
+      { name: 'Past Records', path: '/material-management/physical-verification-history', icon: 'fi fi-rr-time-past' }
+    ];
+  }
 
   const handleLogout = async () => {
     await fetch('/api/auth/logout', { method: 'POST' });
@@ -59,7 +67,9 @@ export default function Sidebar() {
 
       <nav style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
         {modules.map((mod) => {
-          const isActive = pathname.startsWith(mod.path);
+          // Exact match or starts with + slash (to prevent physical-verification matching physical-verification-history)
+          const isActive = pathname === mod.path || pathname.startsWith(mod.path + '/');
+          
           return (
             <Link 
               key={mod.path} 

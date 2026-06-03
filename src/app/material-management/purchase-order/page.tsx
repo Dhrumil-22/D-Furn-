@@ -1,7 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { removeBackground } from '@imgly/background-removal';
+import CustomDropdown from '@/components/CustomDropdown';
 
 type POItem = {
   id: string;
@@ -13,6 +16,9 @@ type POItem = {
 };
 
 export default function PurchaseOrderGenerator() {
+  const router = useRouter();
+  const [poId, setPoId] = useState<number | null>(null);
+
   const [vendorName, setVendorName] = useState('');
   const [address1, setAddress1] = useState('');
   const [address2, setAddress2] = useState('');
@@ -30,6 +36,134 @@ export default function PurchaseOrderGenerator() {
   const [deliveryTerms, setDeliveryTerms] = useState('');
   const [paymentTerms, setPaymentTerms] = useState('');
   const [preparedBy, setPreparedBy] = useState('');
+  
+  const [signatureImage, setSignatureImage] = useState<string | null>(null);
+  const [signaturePosition, setSignaturePosition] = useState<'department_head' | 'authorised_signature'>('authorised_signature');
+  const [isRemovingBg, setIsRemovingBg] = useState(false);
+  const [bgStatus, setBgStatus] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [logs, setLogs] = useState<any[]>([]);
+
+  useEffect(() => {
+    // Load PO if ID is in URL
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get('id');
+    if (id) {
+      setPoId(parseInt(id));
+      fetch(`/api/purchase-orders/${id}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data && !data.error) {
+            setVendorName(data.vendorName || '');
+            setAddress1(data.address1 || '');
+            setAddress2(data.address2 || '');
+            setPoNumber(data.poNumber || '');
+            setPurchaseDate(data.purchaseDate || '');
+            setGstPercentage(data.gstPercentage || 18);
+            setFreight(data.freight || 0);
+            setModeOfDispatch(data.modeOfDispatch || '');
+            setDeliveryTerms(data.deliveryTerms || '');
+            setPaymentTerms(data.paymentTerms || '');
+            setPreparedBy(data.preparedBy || '');
+            if (data.signatureImage) setSignatureImage(data.signatureImage);
+            if (data.signaturePosition) setSignaturePosition(data.signaturePosition);
+            
+            if (data.items && data.items.length > 0) {
+              setItems(data.items.map((it: any) => ({
+                id: it.id.toString(),
+                code: it.code,
+                name: it.name,
+                quantity: it.quantity,
+                unit: it.unit,
+                rate: it.rate
+              })));
+            }
+            if (data.logs) {
+              setLogs(data.logs);
+            }
+          }
+        });
+    }
+  }, []);
+
+  const handleDateChange = async (newDate: string) => {
+    setPurchaseDate(newDate);
+    // Auto-generate PO Number when user changes date
+    if (newDate) {
+      try {
+        const res = await fetch(`/api/purchase-orders/next-sequence?date=${newDate}`);
+        const data = await res.json();
+        if (data.generatedId) {
+          setPoNumber(data.generatedId);
+        }
+      } catch (error) {
+        console.error('Failed to fetch next PO sequence:', error);
+      }
+    }
+  };
+
+  const handleSave = async () => {
+    setIsSaving(true);
+    const payload = {
+      vendorName, address1, address2, poNumber, purchaseDate,
+      gstPercentage, freight, modeOfDispatch, deliveryTerms,
+      paymentTerms, preparedBy, signatureImage, signaturePosition,
+      items
+    };
+
+    try {
+      if (poId) {
+        await fetch(`/api/purchase-orders/${poId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        setShowSuccessModal(true);
+      } else {
+        const res = await fetch('/api/purchase-orders', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        setPoId(data.id);
+        window.history.replaceState(null, '', `?id=${data.id}`);
+        setShowSuccessModal(true);
+      }
+    } catch (e) {
+      console.error(e);
+      alert('Failed to save Purchase Order.');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleSignatureUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setIsRemovingBg(true);
+      setBgStatus('Initializing AI Model...');
+
+      const resultBlob = await removeBackground(file, {
+        progress: (key, current, total) => {
+          const percentage = Math.round((current / total) * 100);
+          setBgStatus(`Processing (${percentage}%)`);
+        }
+      });
+
+      const resultUrl = URL.createObjectURL(resultBlob);
+      setSignatureImage(resultUrl);
+    } catch (error) {
+      console.error("Background removal failed:", error);
+      alert("Failed to remove background. Please try another image.");
+    } finally {
+      setIsRemovingBg(false);
+      setBgStatus('');
+    }
+  };
 
   const addItem = () => {
     setItems([...items, { id: Date.now().toString(), code: '', name: '', quantity: 1, unit: 'Nos', rate: 0 }]);
@@ -115,8 +249,13 @@ export default function PurchaseOrderGenerator() {
         }
       `}} />
 
-      <div className="no-print" style={{ display: 'flex', alignItems: 'center', marginBottom: '2rem', gap: '16px' }}>
-        <h1 style={{ fontSize: '2rem', fontWeight: 'bold' }}>Purchase Order Generator</h1>
+      <div className="no-print" style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '2rem' }}>
+        <button onClick={() => router.back()} className="btn-primary" style={{ padding: '8px 16px', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '8px', background: 'var(--card-bg)', color: 'var(--text-color)', border: '1px solid var(--input-border)' }}>
+          <i className="fi fi-rr-arrow-left"></i> Back
+        </button>
+        <h1 style={{ fontSize: '2rem', fontWeight: 'bold', margin: 0 }}>
+          Purchase Order {poId ? `(Editing #${poNumber || poId})` : 'Generator'}
+        </h1>
       </div>
 
       <div className="po-grid-container" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px', alignItems: 'start' }}>
@@ -132,8 +271,8 @@ export default function PurchaseOrderGenerator() {
                 <input type="text" value={poNumber} onChange={e => setPoNumber(e.target.value)} className="input-field" placeholder="e.g. PO-2026-001" />
               </div>
               <div>
-                <label className="label">Date</label>
-                <input type="date" value={purchaseDate} onChange={e => setPurchaseDate(e.target.value)} className="input-field" />
+                <label className="label">Date <span style={{color: '#ef4444'}}>*</span></label>
+                <input type="date" className="input-field" value={purchaseDate} onChange={e => handleDateChange(e.target.value)} required />
               </div>
               <div style={{ gridColumn: '1 / -1' }}>
                 <label className="label">Vendor Name</label>
@@ -220,13 +359,41 @@ export default function PurchaseOrderGenerator() {
                 <label className="label">Payment Terms (Days)</label>
                 <input type="text" value={paymentTerms} onChange={e => setPaymentTerms(e.target.value)} className="input-field" placeholder="e.g. 30" />
               </div>
+              <div style={{ gridColumn: '1 / -1', borderTop: '1px solid var(--input-border)', paddingTop: '16px', marginTop: '8px' }}>
+                <h4 style={{ marginBottom: '12px', color: 'var(--primary)', fontSize: '0.9rem' }}>Signature Configuration</h4>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                  <div>
+                    <label className="label">Upload Signature Image</label>
+                    <input type="file" accept="image/*" onChange={handleSignatureUpload} disabled={isRemovingBg} className="input-field" style={{ padding: '8px' }} />
+                    {isRemovingBg && (
+                      <div style={{ marginTop: '8px', fontSize: '0.8rem', color: 'var(--primary)', fontWeight: 600 }}>
+                        {bgStatus}
+                      </div>
+                    )}
+                  </div>
+                  <div>
+                    <label className="label">Signature Position</label>
+                    <CustomDropdown
+                      value={signaturePosition}
+                      onChange={(val: string) => setSignaturePosition(val as any)}
+                      options={[
+                        { label: 'Department Head', value: 'department_head' },
+                        { label: 'Authorised Signature', value: 'authorised_signature' }
+                      ]}
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
-          {/* Print Button at bottom of form */}
-          <div className="no-print" style={{ marginTop: '24px' }}>
-            <button onClick={handlePrint} className="btn-primary" style={{ width: '100%', padding: '16px', fontSize: '1.2rem', borderRadius: '8px', fontWeight: 'bold' }}>
-              <i className="fi fi-rr-print" style={{ fontSize: '1.1rem' }}></i> Download / Print PDF
+          {/* Action Buttons */}
+          <div className="no-print" style={{ marginTop: '24px', display: 'flex', gap: '16px' }}>
+            <button onClick={handleSave} disabled={isSaving} className="btn-primary" style={{ flex: 1, padding: '16px', fontSize: '1.1rem', borderRadius: '8px', fontWeight: 'bold' }}>
+              {isSaving ? 'Saving...' : (poId ? 'Update PO Draft' : 'Save PO Draft')}
+            </button>
+            <button onClick={handlePrint} className="btn-primary" style={{ flex: 1, padding: '16px', fontSize: '1.1rem', borderRadius: '8px', fontWeight: 'bold' }}>
+              <i className="fi fi-rr-print" style={{ fontSize: '1.1rem' }}></i> Download / Print
             </button>
           </div>
         </div>
@@ -285,27 +452,27 @@ export default function PurchaseOrderGenerator() {
                   <tr key={i}>
                     <td style={{ border: '1px solid black', padding: '8px', textAlign: 'center' }}>{item.code}</td>
                     <td style={{ border: '1px solid black', padding: '8px' }}>{item.name}</td>
-                    <td style={{ border: '1px solid black', padding: '8px', textAlign: 'center' }}>{item.quantity}</td>
+                    <td style={{ border: '1px solid black', padding: '8px', textAlign: 'center' }}>{isNaN(item.quantity) ? '' : item.quantity}</td>
                     <td style={{ border: '1px solid black', padding: '8px', textAlign: 'center' }}>{item.unit}</td>
-                    <td style={{ border: '1px solid black', padding: '8px', textAlign: 'right' }}>{item.rate.toFixed(2)}</td>
-                    <td style={{ border: '1px solid black', padding: '8px', textAlign: 'right' }}>{(item.quantity * item.rate).toFixed(2)}</td>
+                    <td style={{ border: '1px solid black', padding: '8px', textAlign: 'right' }}>{isNaN(item.rate) ? '0.00' : item.rate.toFixed(2)}</td>
+                    <td style={{ border: '1px solid black', padding: '8px', textAlign: 'right' }}>{isNaN(item.quantity * item.rate) ? '0.00' : (item.quantity * item.rate).toFixed(2)}</td>
                   </tr>
                 ))}
                 <tr>
-                  <td colSpan={5} style={{ border: '1px solid black', padding: '8px', textAlign: 'right', fontWeight: 'bold' }}>Total Amount:</td>
-                  <td style={{ border: '1px solid black', padding: '8px', textAlign: 'right' }}>{totalAmount.toFixed(2)}</td>
+                  <td colSpan={5} style={{ border: '1px solid black', padding: '8px', textAlign: 'right', fontWeight: 'bold' }}>Total</td>
+                  <td style={{ border: '1px solid black', padding: '8px', textAlign: 'right' }}>{isNaN(totalAmount) ? '0.00' : totalAmount.toFixed(2)}</td>
                 </tr>
                 <tr>
-                  <td colSpan={5} style={{ border: '1px solid black', padding: '8px', textAlign: 'right', fontWeight: 'bold' }}>GST ({gstPercentage}%):</td>
-                  <td style={{ border: '1px solid black', padding: '8px', textAlign: 'right' }}>{gstAmount.toFixed(2)}</td>
+                  <td colSpan={5} style={{ border: '1px solid black', padding: '8px', textAlign: 'right' }}>Add: GST @ {gstPercentage}%</td>
+                  <td style={{ border: '1px solid black', padding: '8px', textAlign: 'right' }}>{isNaN(gstAmount) ? '0.00' : gstAmount.toFixed(2)}</td>
                 </tr>
                 <tr>
-                  <td colSpan={5} style={{ border: '1px solid black', padding: '8px', textAlign: 'right', fontWeight: 'bold' }}>Freight Charges:</td>
-                  <td style={{ border: '1px solid black', padding: '8px', textAlign: 'right' }}>{freight.toFixed(2)}</td>
+                  <td colSpan={5} style={{ border: '1px solid black', padding: '8px', textAlign: 'right' }}>Add: Freight / Handling</td>
+                  <td style={{ border: '1px solid black', padding: '8px', textAlign: 'right' }}>{isNaN(freight) ? '0.00' : freight.toFixed(2)}</td>
                 </tr>
                 <tr>
-                  <td colSpan={5} style={{ border: '1px solid black', padding: '8px', textAlign: 'right', fontWeight: 'bold' }}>Net Payable:</td>
-                  <td style={{ border: '1px solid black', padding: '8px', textAlign: 'right', fontWeight: 'bold' }}>{netPayable.toFixed(2)}</td>
+                  <td colSpan={5} style={{ border: '1px solid black', padding: '8px', textAlign: 'right', fontWeight: 'bold' }}>Net Payable</td>
+                  <td style={{ border: '1px solid black', padding: '8px', textAlign: 'right', fontWeight: 'bold' }}>{isNaN(netPayable) ? '0.00' : netPayable.toFixed(2)}</td>
                 </tr>
               </tbody>
             </table>
@@ -323,9 +490,32 @@ export default function PurchaseOrderGenerator() {
                   *Mention the PO Number in your delivery challan and Invoice
                 </div>
               </div>
-              <div style={{ padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                <div style={{ fontWeight: 'bold' }}>Department Head</div>
-                <div style={{ fontWeight: 'bold' }}>Authorised Signature</div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr' }}>
+
+                {/* Department Head Box */}
+                <div style={{ padding: '16px', borderRight: '1px solid black', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', alignItems: 'center', position: 'relative' }}>
+                  {signatureImage && signaturePosition === 'department_head' && (
+                    <img
+                      src={signatureImage}
+                      alt="Signature"
+                      style={{ position: 'absolute', bottom: '36px', left: '50%', transform: 'translateX(-50%)', width: '240px', height: '120px', objectFit: 'contain' }}
+                    />
+                  )}
+                  <div style={{ fontWeight: 'bold', textAlign: 'center' }}>Department Head</div>
+                </div>
+
+                {/* Authorised Signature Box */}
+                <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', alignItems: 'center', position: 'relative' }}>
+                  {signatureImage && signaturePosition === 'authorised_signature' && (
+                    <img
+                      src={signatureImage}
+                      alt="Signature"
+                      style={{ position: 'absolute', bottom: '36px', left: '50%', transform: 'translateX(-50%)', width: '240px', height: '120px', objectFit: 'contain' }}
+                    />
+                  )}
+                  <div style={{ fontWeight: 'bold', textAlign: 'center' }}>Authorised Signature</div>
+                </div>
+
               </div>
             </div>
 
@@ -333,6 +523,59 @@ export default function PurchaseOrderGenerator() {
         </div>
 
       </div>
+
+      {/* Success Modal */}
+      {showSuccessModal && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1000,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          backdropFilter: 'blur(4px)',
+          animation: 'fadeIn 0.3s ease-out'
+        }}>
+          <div className="glass-card" style={{ 
+            padding: '40px', maxWidth: '400px', width: '90%', textAlign: 'center',
+            animation: 'scaleUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards'
+          }}>
+            <div style={{ 
+              width: '80px', height: '80px', borderRadius: '50%', 
+              backgroundColor: 'rgba(16, 185, 129, 0.1)', color: '#10b981',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              margin: '0 auto 24px auto', fontSize: '2.5rem',
+              animation: 'bounceIn 0.6s cubic-bezier(0.280, 0.840, 0.420, 1) 0.2s both'
+            }}>
+              ✓
+            </div>
+            <h3 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '12px' }}>Success!</h3>
+            <p style={{ opacity: 0.8, marginBottom: '32px' }}>
+              The Purchase Order has been successfully saved.
+            </p>
+            <button onClick={() => {
+              setShowSuccessModal(false);
+              router.push('/material-management/purchase-order/history');
+            }} className="btn-primary" style={{ padding: '12px 32px', width: '100%' }}>
+              Continue
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* CSS Animations */}
+      <style dangerouslySetInnerHTML={{__html: `
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes scaleUp {
+          from { opacity: 0; transform: scale(0.9); }
+          to { opacity: 1; transform: scale(1); }
+        }
+        @keyframes bounceIn {
+          0% { transform: scale(0); }
+          50% { transform: scale(1.2); }
+          100% { transform: scale(1); }
+        }
+      `}} />
     </div>
   );
 }

@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { cookies } from 'next/headers';
+import { verifyToken } from '@/lib/auth';
 
 export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -10,8 +12,28 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
       return NextResponse.json({ error: 'Invalid ID' }, { status: 400 });
     }
 
-    await prisma.product.delete({
+    const deletedProduct = await prisma.product.delete({
       where: { id: productId }
+    });
+
+    let userName = 'System';
+    const cookieStore = await cookies();
+    const token = cookieStore.get('auth_token')?.value;
+    if (token) {
+      const decoded = await verifyToken(token);
+      if (decoded && decoded.name) {
+        userName = decoded.name;
+      }
+    }
+
+    await prisma.systemLog.create({
+      data: {
+        module: 'INVENTORY',
+        action: 'DELETED',
+        description: `Product/Inventory item deleted: ${deletedProduct.itemName}`,
+        referenceId: productId.toString(),
+        userName: userName,
+      }
     });
 
     return NextResponse.json({ success: true });
@@ -43,6 +65,27 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
           ...(body.websiteSync !== undefined && { websiteSync: body.websiteSync })
         }
       });
+
+      let userName = 'System';
+      const cookieStore = await cookies();
+      const token = cookieStore.get('auth_token')?.value;
+      if (token) {
+        const decoded = await verifyToken(token);
+        if (decoded && decoded.name) {
+          userName = decoded.name;
+        }
+      }
+
+      await prisma.systemLog.create({
+        data: {
+          module: 'INVENTORY',
+          action: 'UPDATED',
+          description: `Product sync status updated: ${updatedProduct.itemName}`,
+          referenceId: productId.toString(),
+          userName: userName,
+        }
+      });
+
       return NextResponse.json({ success: true, product: updatedProduct });
     }
 
@@ -104,6 +147,26 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     const updatedProduct = await prisma.product.update({
       where: { id: productId },
       data,
+    });
+
+    let userName = 'System';
+    const cookieStore = await cookies();
+    const token = cookieStore.get('auth_token')?.value;
+    if (token) {
+      const decoded = await verifyToken(token);
+      if (decoded && decoded.name) {
+        userName = decoded.name;
+      }
+    }
+
+    await prisma.systemLog.create({
+      data: {
+        module: 'INVENTORY',
+        action: 'UPDATED',
+        description: `Product details updated: ${updatedProduct.itemName}`,
+        referenceId: productId.toString(),
+        userName: userName,
+      }
     });
 
     return NextResponse.json({ success: true, product: updatedProduct });

@@ -4,7 +4,7 @@ import { verifyToken } from './lib/auth';
 
 const publicRoutes = ['/login', '/api/auth/login', '/api/auth/logout'];
 
-export async function middleware(request: NextRequest) {
+export default async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Ignore static assets, next internals, etc.

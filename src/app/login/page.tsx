@@ -27,7 +27,11 @@ export default function LoginPage() {
       if (!res.ok) {
         setError(data.error || 'Login failed');
       } else {
-        router.push('/');
+        if (data.user?.role?.toUpperCase() === 'VERIFIER') {
+          router.push('/material-management/physical-verification');
+        } else {
+          router.push('/');
+        }
         router.refresh();
       }
     } catch (err) {

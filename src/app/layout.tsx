@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Outfit } from "next/font/google";
 import Sidebar from "@/components/Sidebar";
 import ThemeProvider from "@/components/ThemeProvider";
+import { cookies } from "next/headers";
+import { verifyToken } from "@/lib/auth";
 import "./globals.css";
 
 const outfit = Outfit({
@@ -14,11 +16,22 @@ export const metadata: Metadata = {
   description: "Enterprise Resource Planning for DFurn",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const cookieStore = await cookies();
+  const token = cookieStore.get('auth_token')?.value;
+  let userRole = 'SUPERADMIN'; // Default fallback
+
+  if (token) {
+    const decoded = await verifyToken(token);
+    if (decoded) {
+      userRole = decoded.role;
+    }
+  }
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -27,7 +40,7 @@ export default function RootLayout({
       <body className={outfit.className}>
         <ThemeProvider>
           <div className="layout-container">
-            <Sidebar />
+            <Sidebar userRole={userRole} />
             <main className="main-content">
               {children}
             </main>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import CustomDropdown from '@/components/CustomDropdown';
 
 export default function AuthorizationAccessPage() {
   const [users, setUsers] = useState<any[]>([]);
@@ -27,6 +28,9 @@ export default function AuthorizationAccessPage() {
     fetchUsers();
   }, []);
 
+  const [isCustomRole, setIsCustomRole] = useState(false);
+  const [availableRoles, setAvailableRoles] = useState(['ADMIN', 'VERIFIER', 'DEVELOPER', 'SUPERADMIN']);
+
   const handleAddUser = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -47,7 +51,7 @@ export default function AuthorizationAccessPage() {
         setName('');
         setEmail('');
         setPassword('');
-        setRole('VERIFIER');
+        setRole(availableRoles[0]);
         fetchUsers();
       }
     } catch (err) {
@@ -108,16 +112,59 @@ export default function AuthorizationAccessPage() {
 
             <div>
               <label className="label">Role</label>
-              <select 
-                className="input-field" 
-                value={role} 
-                onChange={e => setRole(e.target.value)}
-              >
-                <option value="ADMIN">Admin</option>
-                <option value="VERIFIER">Verifier</option>
-                <option value="DEVELOPER">Developer</option>
-                <option value="SUPERADMIN">Superadmin</option>
-              </select>
+              {!isCustomRole ? (
+                <CustomDropdown
+                  value={role}
+                  onChange={(val) => {
+                    if (val === '+ADD_ROLE') {
+                      setIsCustomRole(true);
+                      setRole('');
+                    } else {
+                      setRole(val);
+                    }
+                  }}
+                  options={[
+                    ...availableRoles.map(r => ({ label: r, value: r })),
+                    { label: '+ Add Role', value: '+ADD_ROLE', isSpecial: true }
+                  ]}
+                />
+              ) : (
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <input 
+                    type="text" 
+                    className="input-field" 
+                    value={role} 
+                    onChange={e => setRole(e.target.value.toUpperCase())}
+                    placeholder="ENTER NEW ROLE"
+                    style={{ flex: 1 }}
+                    autoFocus
+                    required={isCustomRole}
+                  />
+                  <button 
+                    type="button" 
+                    onClick={() => { 
+                      const newRole = role.trim();
+                      if (newRole && !availableRoles.includes(newRole)) {
+                        setAvailableRoles([...availableRoles, newRole]);
+                      }
+                      setIsCustomRole(false); 
+                      if (!newRole) setRole(availableRoles[0]);
+                    }}
+                    className="btn-primary" 
+                    style={{ padding: '0 16px', whiteSpace: 'nowrap', borderRadius: '8px', fontSize: '0.9rem' }}
+                  >
+                    Save
+                  </button>
+                  <button 
+                    type="button" 
+                    onClick={() => { setIsCustomRole(false); setRole(availableRoles[0]); }}
+                    className="btn-secondary" 
+                    style={{ padding: '0 16px', whiteSpace: 'nowrap', borderRadius: '8px', fontSize: '0.9rem', color: '#ef4444' }}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              )}
             </div>
 
             <button type="submit" className="btn-primary" disabled={loading} style={{ marginTop: '8px' }}>

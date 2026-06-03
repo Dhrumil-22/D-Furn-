@@ -38,6 +38,7 @@ model Product {
   physicalStockLastUpdatedOn DateTime?
   verificationFrequency      Int?
   websiteSync                Boolean   @default(false)
+  physicalVerifications      PhysicalVerification[]
   createdAt                  DateTime  @default(now())
   updatedAt                  DateTime  @updatedAt
 }
@@ -61,4 +62,62 @@ model User {
   role     String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model PurchaseOrder {
+  id                Int      @id @default(autoincrement())
+  poNumber          String   @unique
+  purchaseDate      String
+  vendorName        String
+  address1          String
+  address2          String
+  gstPercentage     Float    @default(18)
+  freight           Float    @default(0)
+  modeOfDispatch    String?
+  deliveryTerms     String?
+  paymentTerms      String?
+  preparedBy        String?
+  signatureImage    String? // Store as base64 string
+  signaturePosition String?
+  items             POItem[]
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model SystemLog {
+  id              Int      @id @default(autoincrement())
+  module          String   // e.g., "PURCHASE_ORDER", "PHYSICAL_VERIFICATION", "VENDOR_MASTER", "INVENTORY"
+  action          String   // e.g., "CREATED", "UPDATED", "DELETED", "VERIFIED", "QUERY_RAISED"
+  description     String
+  referenceId     String?  // e.g., the PO Number, Product ID, etc. stringified so it's generic
+  userName        String?
+  createdAt       DateTime @default(now())
+}
+
+model POItem {
+  id              Int           @id @default(autoincrement())
+  purchaseOrderId Int
+  purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+  code            String
+  name            String
+  quantity        Float
+  unit            String
+  rate            Float
+}
+
+model PhysicalVerification {
+  id              Int       @id @default(autoincrement())
+  pvNumber        String?
+  productId       Int
+  product         Product   @relation(fields: [productId], references: [id])
+  verifierId      Int?
+  verifierName    String
+  date            DateTime
+  physicalCount   Float
+  digitalCount    Float
+  hasMismatch     Boolean
+  queryMessage    String?
+  queryResolved   Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 }
