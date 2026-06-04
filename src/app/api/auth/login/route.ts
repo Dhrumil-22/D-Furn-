@@ -14,7 +14,7 @@ export async function POST(request: Request) {
     // Check if any users exist at all. If not, create default superadmin.
     const userCount = await prisma.user.count();
     if (userCount === 0) {
-      const hashedPassword = await bcrypt.hash('superadmin', 10);
+      const hashedPassword = await bcrypt.hash('dfurnsuperadmin', 10);
       await prisma.user.create({
         data: {
           name: 'Super Admin',
