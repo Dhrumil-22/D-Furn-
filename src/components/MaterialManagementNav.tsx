@@ -8,13 +8,13 @@ export default function MaterialManagementNav() {
   
   const tabs = [
     { name: 'Purchase Orders', path: '/material-management/purchase-order' },
+    { name: 'Physical Verification', path: '/material-management/physical-verification' },
+    { name: 'System Logs', path: '/material-management/logs' },
     { name: 'Inward / Issue', path: '/material-management/inward-issue' },
     { name: 'Job Work In/Out', path: '/material-management/job-work' },
-    { name: 'Physical Verification', path: '/material-management/physical-verification' },
     { name: 'Vendor Master', path: '/material-management/vendor-master' },
     { name: 'MSME Compliance', path: '/material-management/msme-compliance' },
     { name: 'Multi-Vendor Pricing', path: '/material-management/multi-vendor-pricing' },
-    { name: 'System Logs', path: '/material-management/logs' },
   ];
 
   return (
