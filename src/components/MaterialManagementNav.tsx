@@ -18,12 +18,11 @@ export default function MaterialManagementNav() {
   ];
 
   return (
-    <div style={{
+    <div className="nav-scroll-container" style={{
       display: 'flex',
       gap: '8px',
       borderBottom: '2px solid var(--sidebar-border)',
       marginBottom: '32px',
-      overflowX: 'auto',
       paddingBottom: '2px'
     }}>
       {tabs.map((tab) => {

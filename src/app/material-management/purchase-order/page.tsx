@@ -258,14 +258,14 @@ export default function PurchaseOrderGenerator() {
         </h1>
       </div>
 
-      <div className="po-grid-container" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px', alignItems: 'start' }}>
+      <div className="po-grid-container responsive-grid-2" style={{ alignItems: 'start' }}>
 
         {/* Left Side: Form */}
         <div className="no-print" style={{ display: 'flex', flexDirection: 'column', gap: '24px', paddingRight: '16px' }}>
 
           <div className="glass-card">
             <h3 style={{ marginBottom: '16px', color: 'var(--primary)', borderBottom: '1px solid var(--input-border)', paddingBottom: '8px' }}>Vendor & PO Details</h3>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+            <div className="responsive-grid-2">
               <div>
                 <label className="label">PO Number</label>
                 <input type="text" value={poNumber} onChange={e => setPoNumber(e.target.value)} className="input-field" placeholder="e.g. PO-2026-001" />
@@ -297,7 +297,7 @@ export default function PurchaseOrderGenerator() {
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               {items.map((item, index) => (
-                <div key={item.id} style={{ display: 'grid', gridTemplateColumns: '1fr 2fr 1fr 1fr 1fr auto', gap: '8px', alignItems: 'end', backgroundColor: 'rgba(255,255,255,0.02)', padding: '12px', borderRadius: '8px', border: '1px solid var(--input-border)' }}>
+                <div key={item.id} className="item-grid" style={{ backgroundColor: 'rgba(255,255,255,0.02)', padding: '12px', borderRadius: '8px', border: '1px solid var(--input-border)' }}>
                   <div>
                     <label className="label" style={{ fontSize: '0.75rem' }}>Code</label>
                     <input type="text" value={item.code} onChange={e => updateItem(index, 'code', e.target.value)} className="input-field" style={{ padding: '6px' }} />
@@ -328,7 +328,7 @@ export default function PurchaseOrderGenerator() {
 
           <div className="glass-card">
             <h3 style={{ marginBottom: '16px', color: 'var(--primary)', borderBottom: '1px solid var(--input-border)', paddingBottom: '8px' }}>Totals & Taxes</h3>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+            <div className="responsive-grid-2">
               <div>
                 <label className="label">GST Percentage (%)</label>
                 <input type="number" value={gstPercentage} onChange={e => setGstPercentage(parseFloat(e.target.value) || 0)} className="input-field" />
@@ -342,7 +342,7 @@ export default function PurchaseOrderGenerator() {
 
           <div className="glass-card">
             <h3 style={{ marginBottom: '16px', color: 'var(--primary)', borderBottom: '1px solid var(--input-border)', paddingBottom: '8px' }}>Terms & Info</h3>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+            <div className="responsive-grid-2">
               <div>
                 <label className="label">Mode of Dispatch</label>
                 <input type="text" value={modeOfDispatch} onChange={e => setModeOfDispatch(e.target.value)} className="input-field" />
@@ -361,7 +361,7 @@ export default function PurchaseOrderGenerator() {
               </div>
               <div style={{ gridColumn: '1 / -1', borderTop: '1px solid var(--input-border)', paddingTop: '16px', marginTop: '8px' }}>
                 <h4 style={{ marginBottom: '12px', color: 'var(--primary)', fontSize: '0.9rem' }}>Signature Configuration</h4>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div className="responsive-grid-2">
                   <div>
                     <label className="label">Upload Signature Image</label>
                     <input type="file" accept="image/*" onChange={handleSignatureUpload} disabled={isRemovingBg} className="input-field" style={{ padding: '8px' }} />

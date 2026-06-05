@@ -41,7 +41,7 @@ export default function WebsiteSyncDashboard({ initialProducts }: { initialProdu
   const syncedProducts = filteredAdminProducts.filter(p => p.websiteSync);
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px', minHeight: '600px' }}>
+    <div className="responsive-grid-2" style={{ minHeight: '600px' }}>
       
       {/* Admin Panel (Left) */}
       <div className="glass-card">

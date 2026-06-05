@@ -108,12 +108,12 @@ export default function POAuditLogs() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', width: '100%' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '8px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '8px', flexWrap: 'wrap', gap: '16px' }}>
         <div>
           <h2 style={{ fontSize: '1.5rem', fontWeight: 700, margin: 0, color: 'var(--primary)' }}>System Logs</h2>
           <p style={{ opacity: 0.6, fontSize: '0.9rem', marginTop: '4px' }}>General audit trail for the entire system.</p>
         </div>
-        <div style={{ width: '350px' }}>
+        <div style={{ width: '100%', maxWidth: '350px' }}>
           <div className="search-container" style={{ position: 'relative' }}>
             <i className="fi fi-rr-search" style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', opacity: 0.5 }}></i>
             <input 
@@ -244,7 +244,7 @@ export default function POAuditLogs() {
         )}
       </div>
 
-      <div className="glass-card" style={{ overflowX: 'auto', padding: '24px' }}>
+      <div className="glass-card table-responsive" style={{ padding: '24px' }}>
         {loading ? (
           <div style={{ padding: '24px', textAlign: 'center', opacity: 0.7 }}>Loading logs...</div>
         ) : filteredLogs.length === 0 ? (
@@ -276,7 +276,17 @@ export default function POAuditLogs() {
                     {log.referenceId || '-'}
                   </td>
                   <td style={{ padding: '12px' }}>
-                    <div style={{ display: 'inline-flex', padding: '4px 10px', backgroundColor: log.action === 'CREATED' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(59, 130, 246, 0.1)', color: log.action === 'CREATED' ? '#10b981' : '#3b82f6', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                    <div style={{ 
+                      display: 'inline-flex', 
+                      padding: '4px 10px', 
+                      backgroundColor: log.action === 'CREATED' ? 'rgba(16, 185, 129, 0.1)' : log.action === 'DELETED' || log.action === 'DELETE' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(59, 130, 246, 0.1)', 
+                      color: log.action === 'CREATED' ? '#10b981' : log.action === 'DELETED' || log.action === 'DELETE' ? '#ef4444' : '#3b82f6', 
+                      borderRadius: '12px', 
+                      fontSize: '0.75rem', 
+                      fontWeight: 700, 
+                      textTransform: 'uppercase', 
+                      letterSpacing: '0.5px' 
+                    }}>
                       {log.action}
                     </div>
                   </td>

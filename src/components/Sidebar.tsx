@@ -10,6 +10,8 @@ export default function Sidebar({ userRole }: { userRole?: string }) {
   const router = useRouter();
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const [isDesktopCollapsed, setIsDesktopCollapsed] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -43,25 +45,30 @@ export default function Sidebar({ userRole }: { userRole?: string }) {
   };
 
   return (
-    <aside style={{
-      width: '280px',
-      backgroundColor: 'var(--sidebar-bg)',
-      borderRight: '1px solid var(--sidebar-border)',
-      padding: '24px 16px',
-      display: 'flex',
-      flexDirection: 'column',
-      flexShrink: 0,
-      color: 'var(--sidebar-text)',
-      boxShadow: '2px 0 8px rgba(0,0,0,0.02)'
-    }}>
-      <div style={{ padding: '0 12px', marginBottom: '40px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-        <i className="fi fi-rr-bars-staggered" style={{ fontSize: '1.2rem', cursor: 'pointer', color: 'var(--sidebar-text)' }}></i>
-        <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--brand-orange)', letterSpacing: '-0.5px', margin: 0 }}>
+    <>
+      <div className="mobile-header">
+        <h2 style={{ fontSize: '1.5rem', fontWeight: 800, margin: 0 }}>
           d'furn<span style={{ color: 'var(--sidebar-text)', fontSize: '1.2rem', fontWeight: 600, marginLeft: '8px' }}>Admin</span>
         </h2>
+        <i className="fi fi-rr-bars-staggered" style={{ fontSize: '1.5rem', cursor: 'pointer' }} onClick={() => setIsOpen(true)}></i>
       </div>
       
-      <div style={{ fontSize: '0.75rem', fontWeight: 700, opacity: 0.6, marginBottom: '12px', paddingLeft: '12px', textTransform: 'uppercase', letterSpacing: '1px' }}>
+      <div className={`mobile-overlay ${isOpen ? 'open' : ''}`} onClick={() => setIsOpen(false)}></div>
+
+      <aside className={`sidebar ${isOpen ? 'open' : ''} ${isDesktopCollapsed ? 'collapsed' : ''}`}>
+        <div style={{ padding: '0 12px', marginBottom: '40px', display: 'flex', alignItems: 'center', gap: '8px', justifyContent: isDesktopCollapsed ? 'center' : 'flex-start' }}>
+          
+          {/* Mobile close button */}
+          <i className="fi fi-rr-cross desktop-hide" style={{ fontSize: '1.2rem', cursor: 'pointer', color: 'var(--sidebar-text)' }} onClick={() => setIsOpen(false)}></i>
+          
+          <i className="fi fi-rr-bars-staggered mobile-hide" style={{ fontSize: '1.5rem', cursor: 'pointer', color: 'var(--brand-orange)' }} onClick={() => setIsDesktopCollapsed(!isDesktopCollapsed)}></i>
+          
+          <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--brand-orange)', letterSpacing: '-0.5px', margin: 0, whiteSpace: 'nowrap', opacity: isDesktopCollapsed ? 0 : 1, transition: 'opacity 0.2s ease', overflow: 'hidden' }}>
+            d'furn<span style={{ color: 'var(--sidebar-text)', fontSize: '1.2rem', fontWeight: 600, marginLeft: '8px' }}>Admin</span>
+          </h2>
+        </div>
+      
+      <div style={{ fontSize: '0.75rem', fontWeight: 700, opacity: isDesktopCollapsed ? 0 : 0.6, marginBottom: '12px', paddingLeft: '12px', textTransform: 'uppercase', letterSpacing: '1px', whiteSpace: 'nowrap', transition: 'opacity 0.2s ease', overflow: 'hidden' }}>
         Modules
       </div>
 
@@ -74,6 +81,7 @@ export default function Sidebar({ userRole }: { userRole?: string }) {
             <Link 
               key={mod.path} 
               href={mod.path}
+              title={isDesktopCollapsed ? mod.name : undefined}
               style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -86,6 +94,8 @@ export default function Sidebar({ userRole }: { userRole?: string }) {
                 fontWeight: isActive ? 600 : 500,
                 transition: 'all 0.2s ease',
                 opacity: isActive ? 1 : 0.8,
+                whiteSpace: 'nowrap',
+                overflow: 'hidden'
               }}
               onMouseEnter={(e) => {
                 if (!isActive) {
@@ -99,55 +109,67 @@ export default function Sidebar({ userRole }: { userRole?: string }) {
                   e.currentTarget.style.opacity = '0.8';
                 }
               }}
+              onClick={() => setIsOpen(false)}
             >
-              <i className={mod.icon} style={{ fontSize: '1.1rem', opacity: isActive ? 1 : 0.7 }}></i>
-              {mod.name}
+              <i className={mod.icon} style={{ fontSize: '1.1rem', opacity: isActive ? 1 : 0.7, minWidth: '1.1rem' }}></i>
+              <span style={{ opacity: isDesktopCollapsed ? 0 : 1, transition: 'opacity 0.2s ease' }}>{mod.name}</span>
             </Link>
           );
         })}
       </nav>
       
-      <div style={{ marginTop: 'auto', padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+      <div style={{ marginTop: 'auto', padding: '16px 0', display: 'flex', flexDirection: 'column', gap: '12px' }}>
         {mounted && (
           <button 
             onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+            title={isDesktopCollapsed ? (theme === 'dark' ? 'Light Mode' : 'Dark Mode') : undefined}
             style={{
               display: 'flex',
               alignItems: 'center',
               gap: '12px',
               padding: '12px',
+              width: '100%',
               borderRadius: '8px',
               backgroundColor: 'rgba(255,255,255,0.05)',
               color: 'var(--sidebar-text)',
               border: 'none',
               cursor: 'pointer',
-              fontWeight: 500
+              fontWeight: 500,
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              transition: 'all 0.2s ease'
             }}
           >
-            <i className={theme === 'dark' ? "fi fi-rr-sun" : "fi fi-rr-moon"} style={{ fontSize: '1.1rem' }}></i>
-            {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
+            <i className={theme === 'dark' ? "fi fi-rr-sun" : "fi fi-rr-moon"} style={{ fontSize: '1.2rem', margin: 0, minWidth: '1.2rem' }}></i>
+            <span style={{ opacity: isDesktopCollapsed ? 0 : 1, transition: 'opacity 0.2s ease' }}>{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>
           </button>
         )}
 
         <button 
           onClick={handleLogout}
+          title={isDesktopCollapsed ? "Sign Out" : undefined}
           style={{
             display: 'flex',
             alignItems: 'center',
             gap: '12px',
             padding: '12px',
+            width: '100%',
             borderRadius: '8px',
             backgroundColor: '#fee2e2',
             color: '#ef4444',
             border: 'none',
             cursor: 'pointer',
-            fontWeight: 600
+            fontWeight: 600,
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            transition: 'all 0.2s ease'
           }}
         >
-          <i className="fi fi-rr-sign-out-alt" style={{ fontSize: '1.1rem' }}></i>
-          Sign Out
+          <i className="fi fi-rr-sign-out-alt" style={{ fontSize: '1.2rem', margin: 0, minWidth: '1.2rem' }}></i>
+          <span style={{ opacity: isDesktopCollapsed ? 0 : 1, transition: 'opacity 0.2s ease' }}>Sign Out</span>
         </button>
       </div>
-    </aside>
+      </aside>
+    </>
   );
 }

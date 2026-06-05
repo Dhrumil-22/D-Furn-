@@ -32,7 +32,7 @@ export default async function ProductDetailPage({ params }: { params: { id: stri
         <DeleteProductButton id={product.id} itemName={product.itemName || 'this product'} />
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '32px' }}>
+      <div className="responsive-grid-1-2" style={{ gap: '32px' }}>
         {/* Left Column - Image & Hero Info */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
           <div className="glass-card" style={{ padding: '0', overflow: 'hidden' }}>
@@ -78,7 +78,7 @@ export default async function ProductDetailPage({ params }: { params: { id: stri
           {/* Attributes */}
           <div className="glass-card">
             <h3 style={{ borderBottom: '1px solid var(--sidebar-border)', paddingBottom: '12px', marginBottom: '16px', color: 'var(--primary)' }}>Attributes & Classification</h3>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+            <div className="responsive-grid-2">
               <DataRow label="Material Category" value={product.materialCategory} />
               <DataRow label="Vendor Name" value={product.vendorName} />
               <DataRow label="Attribute 1" value={product.attribute1} />
@@ -94,7 +94,7 @@ export default async function ProductDetailPage({ params }: { params: { id: stri
           {/* Metrics & Financials */}
           <div className="glass-card">
             <h3 style={{ borderBottom: '1px solid var(--sidebar-border)', paddingBottom: '12px', marginBottom: '16px', color: 'var(--primary)' }}>Unit Cost & Metrics</h3>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+            <div className="responsive-grid-2">
               <DataRow label="Procure Unit" value={product.procureUnit} />
               <DataRow label="Procured Unit Cost" value={product.procuredUnitCost ? `₹${product.procuredUnitCost.toFixed(2)}` : null} />
               <DataRow label="Costing Unit" value={product.costingUnit} />
@@ -107,7 +107,7 @@ export default async function ProductDetailPage({ params }: { params: { id: stri
           {/* Stock */}
           <div className="glass-card">
             <h3 style={{ borderBottom: '1px solid var(--sidebar-border)', paddingBottom: '12px', marginBottom: '16px', color: 'var(--primary)' }}>Stock & Storage</h3>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+            <div className="responsive-grid-2">
               <DataRow label="Storage Location" value={product.storageLocation} />
               <DataRow label="Re-Order Level" value={product.reOrderLevel} />
               <DataRow label="Opening Stock" value={product.openingStock} />

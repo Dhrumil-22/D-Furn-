@@ -81,12 +81,13 @@ export default function PurchaseOrderHistory() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', width: '100%' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '8px' }}>
+      <div className="responsive-flex-col-mobile" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', gap: '16px' }}>
         <div>
-          <h1 style={{ fontSize: '2rem', fontWeight: 'bold' }}>Purchase Orders</h1>
+          <h2 style={{ fontSize: '1.5rem', fontWeight: 700, margin: 0, color: 'var(--primary)' }}>Purchase Orders</h2>
+          <p style={{ opacity: 0.6, fontSize: '0.9rem', marginTop: '4px' }}>Manage purchase orders, vendors, and inventory tracking.</p>
         </div>
-        <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-          <div className="search-container" style={{ position: 'relative', width: '300px' }}>
+        <div className="responsive-flex-col-mobile" style={{ display: 'flex', gap: '16px', alignItems: 'center', flexGrow: 1, justifyContent: 'flex-end' }}>
+          <div className="search-container search-wrapper" style={{ position: 'relative', flexGrow: 1, minWidth: '250px' }}>
             <i className="fi fi-rr-search" style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', opacity: 0.5 }}></i>
             <input 
               type="text" 
@@ -97,104 +98,102 @@ export default function PurchaseOrderHistory() {
               style={{ paddingLeft: '48px' }}
             />
           </div>
-          <Link href="/material-management/purchase-order" className="btn-primary" style={{ padding: '8px 16px', borderRadius: '8px', height: '100%', display: 'flex', alignItems: 'center' }}>
+          <Link href="/material-management/purchase-order" className="btn-primary search-wrapper" style={{ padding: '8px 16px', borderRadius: '8px', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             + Create New PO
           </Link>
         </div>
       </div>
 
-      <div className="glass-card" style={{ padding: '16px 24px', display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap', backgroundColor: 'var(--card-bg)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <i className="fi fi-rr-filter" style={{ opacity: 0.5 }}></i>
-          <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>Filters:</span>
-        </div>
-        
-        <CustomDropdown
-          value={filterYear}
-          onChange={setFilterYear}
-          placeholder="All Years"
-          options={[
-            { label: 'All Years', value: '' },
-            ...availableYears.map(y => ({ label: y, value: y }))
-          ]}
-          style={{ width: '130px' }}
-        />
-
-        <CustomDropdown
-          value={filterMonth}
-          onChange={setFilterMonth}
-          placeholder="All Months"
-          options={[
-            { label: 'All Months', value: '' },
-            { label: 'January', value: '1' },
-            { label: 'February', value: '2' },
-            { label: 'March', value: '3' },
-            { label: 'April', value: '4' },
-            { label: 'May', value: '5' },
-            { label: 'June', value: '6' },
-            { label: 'July', value: '7' },
-            { label: 'August', value: '8' },
-            { label: 'September', value: '9' },
-            { label: 'October', value: '10' },
-            { label: 'November', value: '11' },
-            { label: 'December', value: '12' }
-          ]}
-          style={{ width: '150px' }}
-        />
-
-        <div style={{ borderLeft: '1px solid var(--input-border)', height: '24px', margin: '0 8px' }}></div>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <i className="fi fi-rr-sort-alt" style={{ opacity: 0.5 }}></i>
-          <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>Sort:</span>
+      <div className="filter-container">
+        <div className="filter-group">
+          <label>Year</label>
+          <CustomDropdown
+            value={filterYear}
+            onChange={setFilterYear}
+            placeholder="All Years"
+            options={[
+              { label: 'All Years', value: '' },
+              ...availableYears.map(y => ({ label: y, value: y }))
+            ]}
+          />
         </div>
 
-        <CustomDropdown
-          value={sortBy}
-          onChange={setSortBy}
-          options={[
-            { label: 'Date', value: 'date' },
-            { label: 'PO Number', value: 'poNumber' },
-            { label: 'Vendor', value: 'vendor' }
-          ]}
-          style={{ width: '140px' }}
-        />
+        <div className="filter-group">
+          <label>Month</label>
+          <CustomDropdown
+            value={filterMonth}
+            onChange={setFilterMonth}
+            placeholder="All Months"
+            options={[
+              { label: 'All Months', value: '' },
+              { label: 'January', value: '1' },
+              { label: 'February', value: '2' },
+              { label: 'March', value: '3' },
+              { label: 'April', value: '4' },
+              { label: 'May', value: '5' },
+              { label: 'June', value: '6' },
+              { label: 'July', value: '7' },
+              { label: 'August', value: '8' },
+              { label: 'September', value: '9' },
+              { label: 'October', value: '10' },
+              { label: 'November', value: '11' },
+              { label: 'December', value: '12' }
+            ]}
+          />
+        </div>
 
-        <CustomDropdown
-          value={sortOrder}
-          onChange={setSortOrder}
-          options={[
-            { label: 'Descending (Newest First)', value: 'desc' },
-            { label: 'Ascending (Oldest First)', value: 'asc' }
-          ]}
-          style={{ width: '240px' }}
-        />
+        <div className="filter-group">
+          <label>Sort By</label>
+          <CustomDropdown
+            value={sortBy}
+            onChange={setSortBy}
+            options={[
+              { label: 'Date', value: 'date' },
+              { label: 'PO Number', value: 'poNumber' },
+              { label: 'Vendor', value: 'vendor' }
+            ]}
+          />
+        </div>
+
+        <div className="filter-group">
+          <label>Order</label>
+          <CustomDropdown
+            value={sortOrder}
+            onChange={setSortOrder}
+            options={[
+              { label: 'Descending (Newest First)', value: 'desc' },
+              { label: 'Ascending (Oldest First)', value: 'asc' }
+            ]}
+          />
+        </div>
 
         {(filterYear || filterMonth || searchTerm || sortBy !== 'date' || sortOrder !== 'desc') && (
-          <button 
-            onClick={() => {
-              setFilterYear('');
-              setFilterMonth('');
-              setSearchTerm('');
-              setSortBy('date');
-              setSortOrder('desc');
-            }}
-            style={{ 
-              background: 'none', 
-              border: 'none', 
-              color: 'var(--danger, #ef4444)', 
-              cursor: 'pointer', 
-              fontSize: '0.9rem',
-              fontWeight: 600,
-              marginLeft: 'auto'
-            }}
-          >
-            Clear Filters
-          </button>
+          <div className="filter-group" style={{ justifyContent: 'flex-end', paddingBottom: '8px' }}>
+            <button 
+              onClick={() => {
+                setFilterYear('');
+                setFilterMonth('');
+                setSearchTerm('');
+                setSortBy('date');
+                setSortOrder('desc');
+              }}
+              style={{ 
+                background: 'none', 
+                border: 'none', 
+                color: 'var(--danger, #ef4444)', 
+                cursor: 'pointer',
+                fontWeight: 600,
+                textAlign: 'left',
+                padding: '8px 0'
+              }}
+            >
+              Clear Filters
+            </button>
+          </div>
         )}
       </div>
 
-      <div className="glass-card" style={{ overflowX: 'auto' }}>
+      <div className="glass-card table-responsive">
         {loading ? (
            <div style={{ padding: '24px', textAlign: 'center' }}>Loading Purchase Orders...</div>
         ) : filteredPOs.length === 0 ? (

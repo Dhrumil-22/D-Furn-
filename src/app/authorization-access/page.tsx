@@ -65,7 +65,7 @@ export default function AuthorizationAccessPage() {
     <div>
       <h2 style={{ fontSize: '1.8rem', fontWeight: 700, marginBottom: '2rem' }}>Authorization Access</h2>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '32px' }}>
+      <div className="responsive-grid-1-2" style={{ gap: '32px' }}>
         
         {/* Add User Form */}
         <div className="glass-card" style={{ alignSelf: 'start' }}>

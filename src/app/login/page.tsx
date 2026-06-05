@@ -42,7 +42,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', width: '100vw', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--background)' }}>
+    <div style={{ display: 'flex', flexGrow: 1, width: '100%', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--background)', padding: '24px', borderRadius: '16px' }}>
       <div className="glass-card" style={{ width: '100%', maxWidth: '420px', padding: '40px' }}>
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
           <h1 style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--primary)', marginBottom: '8px' }}>D'FURN ERP</h1>

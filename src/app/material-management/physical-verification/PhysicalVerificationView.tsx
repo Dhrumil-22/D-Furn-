@@ -193,14 +193,18 @@ export default function PhysicalVerificationView({ isSuperadmin, verifiers }: Ph
   // --- SUPERADMIN DASHBOARD ---
   if (isSuperadmin) {
     return (
-      <div className="glass-card" style={{ padding: '24px', overflowX: 'auto' }}>
-        <h2 style={{ fontSize: '1.5rem', marginBottom: '24px' }}>Physical Verification Audits</h2>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', width: '100%' }}>
+        <div>
+          <h2 style={{ fontSize: '1.5rem', fontWeight: 700, margin: 0, color: 'var(--primary)' }}>Physical Verification Audits</h2>
+          <p style={{ opacity: 0.6, fontSize: '0.9rem', marginTop: '4px' }}>Track and manage physical inventory verifications.</p>
+        </div>
         
         {/* Filters */}
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', marginBottom: '24px', padding: '16px', backgroundColor: 'var(--card-bg)', borderRadius: '8px', border: '1px solid var(--input-border)' }}>
-          <div style={{ flex: '1 1 200px' }}>
-            <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: '4px', opacity: 0.8 }}>Product</label>
+        <div className="filter-container">
+          <div className="filter-group">
+            <label>Product</label>
             <CustomDropdown
+              className="filter-item"
               value={searchProduct}
               onChange={setSearchProduct}
               options={[
@@ -210,9 +214,10 @@ export default function PhysicalVerificationView({ isSuperadmin, verifiers }: Ph
               placeholder="All Products"
             />
           </div>
-          <div style={{ flex: '1 1 150px' }}>
-            <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: '4px', opacity: 0.8 }}>Status</label>
+          <div className="filter-group">
+            <label>Status</label>
             <CustomDropdown
+              className="filter-item"
               value={filterStatus}
               onChange={setFilterStatus}
               options={[
@@ -223,9 +228,10 @@ export default function PhysicalVerificationView({ isSuperadmin, verifiers }: Ph
               placeholder="All Statuses"
             />
           </div>
-          <div style={{ flex: '1 1 150px' }}>
-            <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: '4px', opacity: 0.8 }}>Verifier</label>
+          <div className="filter-group">
+            <label>Verifier</label>
             <CustomDropdown
+              className="filter-item"
               value={filterVerifier}
               onChange={setFilterVerifier}
               options={[
@@ -235,17 +241,18 @@ export default function PhysicalVerificationView({ isSuperadmin, verifiers }: Ph
               placeholder="All Verifiers"
             />
           </div>
-          <div style={{ flex: '1 1 120px' }}>
-            <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: '4px', opacity: 0.8 }}>Start Date</label>
+          <div className="filter-group">
+            <label>Start Date</label>
             <input type="date" className="input-field" value={filterStartDate} onChange={e => setFilterStartDate(e.target.value)} />
           </div>
-          <div style={{ flex: '1 1 120px' }}>
-            <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: '4px', opacity: 0.8 }}>End Date</label>
+          <div className="filter-group">
+            <label>End Date</label>
             <input type="date" className="input-field" value={filterEndDate} onChange={e => setFilterEndDate(e.target.value)} />
           </div>
-          <div style={{ flex: '1 1 120px' }}>
-            <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: '4px', opacity: 0.8 }}>Sort By</label>
+          <div className="filter-group">
+            <label>Sort By</label>
             <CustomDropdown
+              className="filter-item"
               value={sortOrder}
               onChange={setSortOrder}
               options={[
@@ -260,7 +267,9 @@ export default function PhysicalVerificationView({ isSuperadmin, verifiers }: Ph
         {filteredVerifications.length === 0 ? (
           <p style={{ textAlign: 'center', opacity: 0.7 }}>No physical verifications submitted yet.</p>
         ) : (
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+          <div className="glass-card" style={{ padding: '24px' }}>
+            <div className="table-responsive">
+              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
             <thead>
               <tr style={{ borderBottom: '2px solid var(--input-border)' }}>
                 <th style={{ padding: '12px', width: '50px' }}>No.</th>
@@ -319,7 +328,9 @@ export default function PhysicalVerificationView({ isSuperadmin, verifiers }: Ph
                 </tr>
               ))}
             </tbody>
-          </table>
+            </table>
+          </div>
+          </div>
         )}
 
         {/* Audit Details Modal */}
@@ -343,7 +354,7 @@ export default function PhysicalVerificationView({ isSuperadmin, verifiers }: Ph
               
               <h2 style={{ fontSize: '1.5rem', marginBottom: '24px', paddingBottom: '12px', borderBottom: '1px solid var(--input-border)' }}>Audit Details</h2>
               
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '24px' }}>
+              <div className="responsive-grid-2" style={{ gap: '20px', marginBottom: '24px' }}>
                 <div><span style={{ opacity: 0.7, fontSize: '0.9rem', display: 'block' }}>Verification ID</span> <strong style={{ fontSize: '1.1rem' }}>{selectedAudit.pvNumber || `PV-${new Date(selectedAudit.date).getDate().toString().padStart(2, '0')}${new Date(selectedAudit.date).toLocaleString('en-US', { month: 'short' }).toUpperCase()}-${selectedAudit.id.toString().padStart(3, '0')}`}</strong></div>
                 <div><span style={{ opacity: 0.7, fontSize: '0.9rem', display: 'block' }}>Product</span> <strong style={{ fontSize: '1.1rem' }}>{selectedAudit.product?.itemName || `Product ID ${selectedAudit.productId}`}</strong></div>
                 <div><span style={{ opacity: 0.7, fontSize: '0.9rem', display: 'block' }}>Verifier</span> <strong style={{ fontSize: '1.1rem' }}>{selectedAudit.verifierName || 'Unknown'}</strong></div>
@@ -393,7 +404,7 @@ export default function PhysicalVerificationView({ isSuperadmin, verifiers }: Ph
         <h2 style={{ fontSize: '1.5rem', marginBottom: '24px' }}>Record Physical Stock</h2>
         
         <form onSubmit={handleSubmitCount} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+          <div className="responsive-grid-2">
             <div>
               <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500 }}>Select Product</label>
               <CustomDropdown
@@ -415,7 +426,7 @@ export default function PhysicalVerificationView({ isSuperadmin, verifiers }: Ph
             </div>
           </div>
           
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+          <div className="responsive-grid-2">
             <div>
               <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500 }}>Verification ID (PV Number)</label>
               <input 
@@ -459,7 +470,7 @@ export default function PhysicalVerificationView({ isSuperadmin, verifiers }: Ph
       {submittedEntry && (
         <div className="glass-card" style={{ padding: '32px', borderLeft: '4px solid var(--primary)', animation: 'slideUp 0.5s ease-out forwards' }}>
           <h3 style={{ fontSize: '1.25rem', marginBottom: '16px' }}>Submission Details</h3>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '24px', fontSize: '0.95rem' }}>
+          <div className="responsive-grid-2" style={{ gap: '16px', marginBottom: '24px', fontSize: '0.95rem' }}>
             <div><span style={{ opacity: 0.7 }}>Product:</span> <strong>{submittedEntry.product?.itemName || `Hardcoded Product ID ${submittedEntry.productId}`}</strong></div>
             <div><span style={{ opacity: 0.7 }}>Date:</span> <strong>{new Date(submittedEntry.date).toLocaleDateString()}</strong></div>
             <div><span style={{ opacity: 0.7 }}>Your Count:</span> <strong>{submittedEntry.physicalCount}</strong></div>

@@ -35,11 +35,11 @@ export default function HistoryView({ verifiers, loggedInUserId }: HistoryViewPr
         <p style={{ opacity: 0.6, fontSize: '1.1rem' }}>View past physical stock counts submitted by you.</p>
       </div>
 
-      <div className="glass-card" style={{ padding: '32px', overflowX: 'auto' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+      <div className="glass-card" style={{ padding: '32px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '16px' }}>
           <h3 style={{ fontSize: '1.25rem' }}>Your Past Records</h3>
           
-          <div style={{ width: '300px' }}>
+          <div style={{ width: '100%', maxWidth: '300px' }}>
             <select 
               value={selectedVerifier} 
               onChange={(e) => setSelectedVerifier(e.target.value)}
@@ -58,7 +58,8 @@ export default function HistoryView({ verifiers, loggedInUserId }: HistoryViewPr
         ) : verifications.length === 0 ? (
           <p style={{ opacity: 0.7 }}>No past records found.</p>
         ) : (
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+          <div className="table-responsive">
+            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
             <thead>
               <tr style={{ borderBottom: '2px solid var(--input-border)' }}>
                 <th style={{ padding: '12px' }}>Date</th>
@@ -79,7 +80,8 @@ export default function HistoryView({ verifiers, loggedInUserId }: HistoryViewPr
                 </tr>
               ))}
             </tbody>
-          </table>
+            </table>
+          </div>
         )}
       </div>
     </div>
