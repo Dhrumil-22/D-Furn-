@@ -40,6 +40,7 @@ export default function PurchaseOrderGenerator() {
   const [signatureImage, setSignatureImage] = useState<string | null>(null);
   const [signaturePosition, setSignaturePosition] = useState<'department_head' | 'authorised_signature'>('authorised_signature');
   const [isRemovingBg, setIsRemovingBg] = useState(false);
+  const [useAiBgRemoval, setUseAiBgRemoval] = useState(false); // Default to false (instant mode)
   const [bgStatus, setBgStatus] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -142,6 +143,13 @@ export default function PurchaseOrderGenerator() {
   const handleSignatureUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    if (!useAiBgRemoval) {
+      // INSTANT MODE: No AI processing
+      const resultUrl = URL.createObjectURL(file);
+      setSignatureImage(resultUrl);
+      return;
+    }
 
     try {
       setIsRemovingBg(true);
@@ -365,9 +373,24 @@ export default function PurchaseOrderGenerator() {
                 <div className="responsive-grid-2">
                   <div>
                     <label className="label">Upload Signature Image</label>
-                    <input type="file" accept="image/*" onChange={handleSignatureUpload} disabled={isRemovingBg} className="input-field" style={{ padding: '8px' }} />
+                    <input type="file" accept="image/*" onChange={handleSignatureUpload} disabled={isRemovingBg} className="input-field" style={{ padding: '8px', marginBottom: '8px' }} />
+                    
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                      <input 
+                        type="checkbox" 
+                        id="useAiBgRemoval" 
+                        checked={useAiBgRemoval} 
+                        onChange={(e) => setUseAiBgRemoval(e.target.checked)} 
+                        style={{ cursor: 'pointer' }}
+                      />
+                      <label htmlFor="useAiBgRemoval" style={{ fontSize: '0.8rem', cursor: 'pointer', userSelect: 'none' }}>
+                        Enable AI Background Removal (Slower)
+                      </label>
+                    </div>
+
                     {isRemovingBg && (
-                      <div style={{ marginTop: '8px', fontSize: '0.8rem', color: 'var(--primary)', fontWeight: 600 }}>
+                      <div style={{ marginTop: '8px', fontSize: '0.85rem', color: 'var(--brand-orange)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px', animation: 'pulse 1.5s infinite ease-in-out' }}>
+                        <i className="fi fi-rr-spinner" style={{ animation: 'spin 1s linear infinite' }}></i>
                         {bgStatus}
                       </div>
                     )}
