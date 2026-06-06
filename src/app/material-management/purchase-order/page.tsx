@@ -148,6 +148,7 @@ export default function PurchaseOrderGenerator() {
       setBgStatus('Initializing AI Model...');
 
       const resultBlob = await removeBackground(file, {
+        model: 'small', // Use small model for drastically faster performance
         progress: (key, current, total) => {
           const percentage = Math.round((current / total) * 100);
           setBgStatus(`Processing (${percentage}%)`);

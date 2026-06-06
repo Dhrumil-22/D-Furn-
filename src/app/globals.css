@@ -460,3 +460,12 @@ input[type="file"]::file-selector-button:active {
     padding: 16px;
   }
 }
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
