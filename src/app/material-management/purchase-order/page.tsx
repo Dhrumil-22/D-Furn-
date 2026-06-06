@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { removeBackground } from '@imgly/background-removal';
 import CustomDropdown from '@/components/CustomDropdown';
 
 type POItem = {
@@ -40,7 +39,6 @@ export default function PurchaseOrderGenerator() {
   const [signatureImage, setSignatureImage] = useState<string | null>(null);
   const [signaturePosition, setSignaturePosition] = useState<'department_head' | 'authorised_signature'>('authorised_signature');
   const [isRemovingBg, setIsRemovingBg] = useState(false);
-  const [useAiBgRemoval, setUseAiBgRemoval] = useState(false); // Default to false (instant mode)
   const [bgStatus, setBgStatus] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -144,30 +142,50 @@ export default function PurchaseOrderGenerator() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (!useAiBgRemoval) {
-      // INSTANT MODE: No AI processing
-      const resultUrl = URL.createObjectURL(file);
-      setSignatureImage(resultUrl);
-      return;
-    }
-
     try {
       setIsRemovingBg(true);
-      setBgStatus('Initializing AI Model...');
+      setBgStatus('Processing Signature...');
 
-      const resultBlob = await removeBackground(file, {
-        model: 'small', // Use small model for drastically faster performance
-        progress: (key, current, total) => {
-          const percentage = Math.round((current / total) * 100);
-          setBgStatus(`Processing (${percentage}%)`);
-        }
+      // Give UI time to render modal before synchronous canvas work
+      await new Promise(resolve => setTimeout(resolve, 50));
+
+      const resultBlob = await new Promise<Blob>((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          canvas.width = img.width;
+          canvas.height = img.height;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) return reject('No canvas context');
+          
+          ctx.drawImage(img, 0, 0);
+          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          const data = imageData.data;
+          
+          // Instant Canvas-based background removal
+          // Makes any pixel that is light/white (R, G, B > 160) completely transparent
+          const threshold = 160;
+          for (let i = 0; i < data.length; i += 4) {
+            if (data[i] > threshold && data[i+1] > threshold && data[i+2] > threshold) {
+              data[i+3] = 0; // Set Alpha to 0 (Transparent)
+            }
+          }
+          
+          ctx.putImageData(imageData, 0, 0);
+          canvas.toBlob((blob) => {
+            if (blob) resolve(blob);
+            else reject('Failed to create Blob');
+          }, 'image/png');
+        };
+        img.onerror = () => reject('Failed to load image');
+        img.src = URL.createObjectURL(file);
       });
 
       const resultUrl = URL.createObjectURL(resultBlob);
       setSignatureImage(resultUrl);
     } catch (error) {
-      console.error("Background removal failed:", error);
-      alert("Failed to remove background. Please try another image.");
+      console.error("Signature processing failed:", error);
+      alert("Failed to process signature. Please try another image.");
     } finally {
       setIsRemovingBg(false);
       setBgStatus('');
@@ -373,27 +391,7 @@ export default function PurchaseOrderGenerator() {
                 <div className="responsive-grid-2">
                   <div>
                     <label className="label">Upload Signature Image</label>
-                    <input type="file" accept="image/*" onChange={handleSignatureUpload} disabled={isRemovingBg} className="input-field" style={{ padding: '8px', marginBottom: '8px' }} />
-                    
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                      <input 
-                        type="checkbox" 
-                        id="useAiBgRemoval" 
-                        checked={useAiBgRemoval} 
-                        onChange={(e) => setUseAiBgRemoval(e.target.checked)} 
-                        style={{ cursor: 'pointer' }}
-                      />
-                      <label htmlFor="useAiBgRemoval" style={{ fontSize: '0.8rem', cursor: 'pointer', userSelect: 'none' }}>
-                        Enable AI Background Removal (Slower)
-                      </label>
-                    </div>
-
-                    {isRemovingBg && (
-                      <div style={{ marginTop: '8px', fontSize: '0.85rem', color: 'var(--brand-orange)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px', animation: 'pulse 1.5s infinite ease-in-out' }}>
-                        <i className="fi fi-rr-spinner" style={{ animation: 'spin 1s linear infinite' }}></i>
-                        {bgStatus}
-                      </div>
-                    )}
+                    <input type="file" accept="image/*" onChange={handleSignatureUpload} disabled={isRemovingBg} className="input-field" style={{ padding: '8px' }} />
                   </div>
                   <div>
                     <label className="label">Signature Position</label>
@@ -547,6 +545,27 @@ export default function PurchaseOrderGenerator() {
         </div>
 
       </div>
+
+      {/* Processing Modal */}
+      {isRemovingBg && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.6)', zIndex: 1100,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          backdropFilter: 'blur(5px)',
+          animation: 'fadeIn 0.2s ease-out'
+        }}>
+          <div className="glass-card" style={{ 
+            padding: '40px', maxWidth: '300px', width: '90%', textAlign: 'center',
+            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px',
+            animation: 'scaleUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards'
+          }}>
+            <i className="fi fi-rr-spinner" style={{ fontSize: '3rem', color: 'var(--brand-orange)', animation: 'spin 1s linear infinite' }}></i>
+            <h3 style={{ fontSize: '1.2rem', fontWeight: 600, margin: 0 }}>{bgStatus}</h3>
+            <p style={{ fontSize: '0.85rem', opacity: 0.7, margin: 0 }}>Extracting signature from background...</p>
+          </div>
+        </div>
+      )}
 
       {/* Success Modal */}
       {showSuccessModal && (
